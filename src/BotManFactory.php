@@ -2,6 +2,9 @@
 
 namespace BotMan\BotMan;
 
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
+use Opis\Closure\SerializableClosure;
 use React\Socket\Server;
 use BotMan\BotMan\Http\Curl;
 use React\EventLoop\LoopInterface;
@@ -66,6 +69,12 @@ class BotManFactory
 
         $driverManager = new DriverManager($config, new Curl());
         $driver = $driverManager->getMatchingDriver($request);
+
+        if(Str::startsWith($key = Config::get('app.key'), 'base64:')) {
+            $key = base64_decode(substr($key, 7));
+        }
+
+        SerializableClosure::setSecretKey($key);
 
         return new BotMan($cache, $driver, $config, $storageDriver);
     }
